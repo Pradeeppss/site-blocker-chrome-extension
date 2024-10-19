@@ -1,0 +1,22 @@
+{
+    "manifest_version": 3,
+    "name": "Block-site",
+    "description": "Block and redirect any site",
+    "version": "1.0",
+    "action": {
+        "default_popup": "popup/popup.html",
+        "default_icon": "assets/favicon.png"
+    },
+    "permissions":["activeTab","tabs","storage"],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "commands": {   
+    "_execute_action": {    
+      "suggested_key": {
+        "default": "Ctrl+B",
+        "mac": "Command+B"
+      }
+    }
+  }
+}   

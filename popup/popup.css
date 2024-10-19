@@ -1,0 +1,65 @@
+*,::before,::after{
+    margin: 0;
+    box-sizing: border-box;
+}
+/*  */
+html{
+    min-width: 250px;
+}
+h1{
+    word-wrap: none;
+    text-align: center;
+    margin-top: 0.5rem;
+    /* border: 1px red solid; */
+}
+button{
+    cursor: pointer;
+}
+
+/*  */
+.button-section, .blocked-section{
+    margin: 0.5rem;
+}
+.block-button,
+.reset-button{
+    width: 100%;
+    background-color: #2791ff;
+    color: white;
+    padding: 0.6rem ;
+    border: none;
+    border-radius: 0.3rem;
+    margin-bottom: 0.3rem;
+}
+.reset-button{
+    background-color: #fb4c67;
+}
+
+/*  */
+
+.blocked-section h2{
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.blocked-list{
+    list-style-type: none;
+    padding: 0;
+}
+.blocked-list li{
+    padding: 0.5rem 0.3rem;
+    box-shadow: 1px 1px 2px gray ;
+    border-radius: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-bottom: 0.3rem;
+}
+
+.blocked-list li>img{
+    width: 1.5rem;
+}
+
+.blocked-list li>label{
+    font-size: 1rem;
+    line-height: 80%;
+}

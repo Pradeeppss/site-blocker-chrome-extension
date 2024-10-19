@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "lib": ["ESNext", "DOM"],
+    "esModuleInterop": true,
+    "outDir": "./dist"
+  },
+  "include": ["./*","*/*.js"],
+  "exclude": []
+}
