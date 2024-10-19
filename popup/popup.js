@@ -6,7 +6,6 @@ const resetButton = document.querySelector("#reset-button")
 const blockedContainer = document.querySelector("#blocked-container")
 // 
 async function main(){
-    console.log("main is called");
     try{
         renderBlockedList()
     }catch(err){
@@ -17,7 +16,7 @@ main()
 // event listeners
 blockButton?.addEventListener("click",async()=>{
     const tab = await getCurrentTab()
-    addSiteToBlockedArray(tab,async ()=>{
+    addSiteToBlockedArray(tab,()=>{
         renderBlockedList()
     })
     // chrome.runtime.sendMessage({type:"add",tab:tab,value:"string"},(response)=>{
@@ -82,17 +81,13 @@ async function addSiteToBlockedArray(tab,callback){
         const blockedSites = await getBlockedSites()
         const curr = blockedSites.blocked || []
         const origin = new URL( tab.url ||"").origin
-        const index = findUrlIndex(curr,origin)
-        if(index === -1){
-            const item = {
-                url:origin,
-                favicon:tab.favIconUrl
-            }
-            storeBlockedSites([...curr,item])
+        if(!validateOrigin(origin,curr))return;
+        const item = {
+            url:origin,
+            favicon:tab.favIconUrl||"../assets/favicon.webp"
         }
-        callback &&callback()
-        console.log(tab);
-        console.log(blockedSites);
+        storeBlockedSites([...curr,item])
+        callback && callback()
     }catch(err){
         console.log(err);
     }
@@ -145,4 +140,23 @@ function findUrlIndex(source,value){
  */
 async function storeBlockedSites(data){
     await chrome.storage.local.set({blocked:data})
+}
+
+/**
+ * 
+ * @param {string} origin 
+ * @param {Blocked[]} curr 
+ * @return {boolean}
+ */
+function validateOrigin(origin,curr){
+    // chrome tabs are not blockable
+    if(origin.startsWith("chrome")){
+        return false
+    }
+    // if site is already added
+    const index = findUrlIndex(curr,origin)
+    if(index !== -1){
+        return false;
+    }
+    return true;
 }

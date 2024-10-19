@@ -57,6 +57,8 @@ button{
 
 .blocked-list li>img{
     width: 1.5rem;
+    background-color: whitesmoke;
+    border-radius: 100rem;
 }
 
 .blocked-list li>label{
