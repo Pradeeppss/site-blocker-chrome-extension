@@ -20,6 +20,28 @@ button{
 .button-section, .blocked-section{
     margin: 0.5rem;
 }
+.input-container{
+    display: flex;
+    gap: 0.3rem;    
+    padding: 0.3rem 0rem;
+}
+.input-container input{
+    flex: 1;
+    border-radius: 0.3rem;
+    border: 1px solid gray;
+    padding: 0rem 0.4rem;
+}
+.block-img-button{
+    padding: 0;
+    border: none;
+    border-radius: 0.5rem;
+
+}
+.block-img-button img{
+    width: 2rem;
+    padding: 0;
+    background-color: transparent;
+}
 .block-button,
 .reset-button{
     width: 100%;
@@ -58,10 +80,23 @@ button{
 .blocked-list li>img{
     width: 1.5rem;
     background-color: whitesmoke;
-    border-radius: 100rem;
+    border-radius: 0.3rem;
 }
 
 .blocked-list li>label{
     font-size: 1rem;
     line-height: 80%;
+    flex: 1;
+    max-width: 169px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.blocked-list li > button{
+    padding: 0.3rem;
+    background-color: #80808022;
+    border: none;
+    border-radius: 0.4rem;
+    &:hover{
+        background-color: #8080803c;
+    }
 }

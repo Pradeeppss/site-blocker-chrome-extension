@@ -3,16 +3,15 @@
  *  url:string,
  *  favicon:string,
  *  redirectUrl?:string}} Blocked
- */
+ * 
+ * @typedef {string[]} KeyWords 
+ * @typedef {"keyword"|"url"} BlockTypes
+*/
 
 const redirectUrl = "chrome://newtab/"
 
-chrome.tabs.onActivated.addListener((tab) => {
-    async function getTabDetails() {
-        const currTab = await getCurrentTab()
-    }
-    getTabDetails()
-})
+// chrome.tabs.onActivated.addListener((tab) => {
+// })
 
 chrome.tabs.onUpdated.addListener((tab) => {
     async function getTabDetails() {
@@ -20,13 +19,10 @@ chrome.tabs.onUpdated.addListener((tab) => {
             const currTab = await getCurrentTab()
             if (!currTab?.url) return;
             const origin = new URL(currTab.url || "").origin
-            const {blocked} = await getBlockedSites()
-            if (!blocked) return;
-            const index = findUrlIndex(blocked,origin)
-            if(index !== -1){
-                const redirect = blocked[index]?.redirectUrl || redirectUrl 
-                chrome.tabs.update({url:redirect})
-            }
+            const { blocked, isBlocked } = await isSiteBlocked(origin)
+            if (!isBlocked) return;
+            const redirect = blocked?.redirectUrl || redirectUrl
+            chrome.tabs.update({ url: redirect })
         } catch (err) {
             console.log(err);
         }
@@ -47,10 +43,30 @@ chrome.tabs.onUpdated.addListener((tab) => {
 // utility functions
 
 /**
+ * @param {string} origin 
+ * @returns {Promise<{isBlocked:boolean,blocked?:Blocked}>}
+ */
+async function isSiteBlocked(origin) {
+    
+    const retVal = { isBlocked: false }
+    const { blocked, keywords } = await getBlockedSites()
+    const index = findMatchingUrlIndex(blocked, origin)
+    if (index !== -1) {
+        return  { isBlocked: true, blocked: blocked[index] }
+    }
+    if(isMatchingKeys(keywords, origin)){
+        retVal.isBlocked = true
+        return retVal;
+    }
+    return retVal
+}
+
+/**
  * @param {Blocked[]} source 
  * @param {string} value 
+ * @returns {number}
  */
-function findUrlIndex(source, value) {
+function findMatchingUrlIndex(source = [], value) {
     for (let i = 0; i < source.length; i++) {
         const item = source[i]
         if (item.url === value) {
@@ -58,6 +74,20 @@ function findUrlIndex(source, value) {
         }
     }
     return -1
+}
+/**
+ * @param {KeyWords} keys 
+ * @param {string} value 
+ * @returns {boolean}
+ */
+function isMatchingKeys(keys = [],value){
+    for (let i = 0;i<keys.length;i++){
+        const key = keys[i]
+        if(value.includes(key)){
+            return true
+        }
+    }
+    return false
 }
 
 async function getBlockedSites() {

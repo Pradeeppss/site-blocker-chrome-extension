@@ -4,6 +4,10 @@ const blockButton = document.querySelector("#block-button")
 const resetButton = document.querySelector("#reset-button")
 /** @type {HTMLUListElement|null}  */
 const blockedContainer = document.querySelector("#blocked-container")
+/** @type {HTMLButtonElement|null} */
+const keyWordBlockButton = document.querySelector("#block-img-button")
+/** @type {HTMLInputElement|null} */
+const keyWordInput = document.querySelector("#block-keyword-input")
 // 
 async function main(){
     try{
@@ -23,8 +27,18 @@ blockButton?.addEventListener("click",async()=>{
     //     console.log(response);
     // })
 })
+keyWordBlockButton?.addEventListener("click",(ev)=>{
+    ev.preventDefault()
+    const key = keyWordInput?.value || ""
+    console.log(key);
+    
+    addKeywordToBlockedKeywords(key,()=>{
+        renderBlockedList()
+    })
+})
 
 resetButton?.addEventListener("click",function(){
+    removeAllBlockedKeywords()
     removeAllBlockedSites(()=>{
         renderBlockedList()
     })
@@ -35,8 +49,8 @@ resetButton?.addEventListener("click",function(){
 async function renderBlockedList(){
     if(!blockedContainer) return;
     const blockedStore = await getBlockedSites()
-    console.log(blockedStore);
     const blocked = blockedStore.blocked || []
+    const Blockedkeywords = blockedStore.keywords || []
     let blockedList = blockedContainer.querySelector("#blocked-list")
     if(blockedList){
         blockedList.remove()
@@ -50,26 +64,25 @@ async function renderBlockedList(){
         const li = document.createElement("li")
         const img = document.createElement("img")
         const label = document.createElement("label")
+        const button = document.createElement("button")
         img.src = item.favicon
         label.innerText  = item.url
+        button.classList.add('fa-regular','fa-trash-can')
+        button.addEventListener("click",()=>{
+            removeFromBlockedList("url",blocked,Blockedkeywords,i,()=>{
+                resizeViewBox()
+            })
+        })
         li.appendChild(img)
         li.appendChild(label)
+        li.appendChild(button)
         blockedList.appendChild(li)
         void document.body.offsetHeight;
     }
 }
 
 function resizeViewBox(){
-    const root = document.documentElement
-    const width = root.scrollWidth 
-    const height = root.offsetHeight 
-    console.log(height);
-    
-    root.style.height = `${height-40}px`
-}
-function removeSiteListView(){
-    const root = document.documentElement
-    root.style.height = '170px'
+    window.location.href = "popup.html"
 }
 
 /**
@@ -92,6 +105,23 @@ async function addSiteToBlockedArray(tab,callback){
         console.log(err);
     }
 }
+/**
+ * @param {string} key
+ * @param {function} [callback] 
+ */
+async function addKeywordToBlockedKeywords(key,callback){
+    try{
+        const blockedSites = await getBlockedSites()
+        const curr = blockedSites.keywords || []
+        if(!validateKeyWord(key,curr))return;
+        console.log(key);
+        
+        storeBlockedKeywords([...curr,key])
+        callback && callback()
+    }catch(err){
+        console.log(err);
+    }
+}
 
 /**
  * @param {function} [callback] 
@@ -102,13 +132,41 @@ async function removeAllBlockedSites(callback){
         if(blocked && blocked.length > 0){
             await chrome.storage.local.remove("blocked")
             callback && callback()
-            removeSiteListView() 
+            resizeViewBox()
         }
     }catch(err){
         console.log(err);
     }
 }
-
+async function removeAllBlockedKeywords(){
+    try{
+        const {keywords} = await getBlockedSites()
+        if(keywords && keywords.length > 0){
+            await chrome.storage.local.remove("keywords")
+            // callback && callback()
+            resizeViewBox()
+        }
+    }catch(err){
+        console.log(err);
+    }
+}
+/**
+ * @param {BlockTypes} type 
+ * @param {Blocked[]} blockedList 
+ * @param {KeyWords} keywords
+ * @param {number} index 
+ * @param {function} [callBack] 
+ */
+function removeFromBlockedList(type,blockedList,keywords,index,callBack){
+    if(type === "url"){
+        blockedList.splice(index,1)
+        storeBlockedSites(blockedList)
+    }else if(type === "keyword"){
+        keywords.splice(index,1)
+        storeBlockedKeywords(keywords)
+    }
+    callBack && callBack()
+}
 
 // utility functions
 async function getCurrentTab(){
@@ -141,6 +199,12 @@ function findUrlIndex(source,value){
 async function storeBlockedSites(data){
     await chrome.storage.local.set({blocked:data})
 }
+/**
+ * @param {KeyWords} data 
+ */
+async function storeBlockedKeywords(data){
+    await chrome.storage.local.set({keywords:data})
+}
 
 /**
  * 
@@ -157,6 +221,23 @@ function validateOrigin(origin,curr){
     const index = findUrlIndex(curr,origin)
     if(index !== -1){
         return false;
+    }
+    return true;
+}
+/**
+ * 
+ * @param {string} key 
+ * @param {KeyWords} curr 
+ * @returns {boolean}
+ */
+function validateKeyWord(key,curr){
+    if(!key) return false;
+    const reserved = ["chrome","tab","newTab","extensions"]
+    if(reserved.includes(key)){
+        return false
+    }
+    if(curr.includes(key)){
+        return false
     }
     return true;
 }
